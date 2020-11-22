@@ -1,7 +1,5 @@
 package list
 
-import "errors"
-
 /*
  Doubly LinkedList
 
@@ -10,11 +8,11 @@ import "errors"
 
 
  API:
- - InsertRoot(val)
- - Insert(ele, pos)
- - Remove(pos)
- - Replace(value, pos)
- - GetRootVal
+ - PushFront(val) - X
+ - Remove(node) - X
+ - MoveFront(node)
+ - Head() - X
+ - Tail() - X
 
  Node: object
  - next
@@ -28,31 +26,30 @@ import "errors"
 
 var (
 	// ErrInvalidIndex occurs when the specified index is out of range
-	ErrInvalidIndex = errors.New("invalid positional index")
+	ErrInvalidIndex = "invalid positional index"
 )
 
 // List is the LinkedList struct
 type List struct {
 	len  int
-	root *Node
-	tail *Node
+	root Node
 }
 
 // Node represents a node in the linked list
 type Node struct {
 	prev  *Node
 	next  *Node
-	value interface{}
+	Value interface{}
 }
 
 // New creates a new LinkedList
 func New() *List {
-	root := new(Node)
-	return &List{
-		root: root,
-		tail: root,
-		len:  0,
-	}
+	l := new(List)
+	l.root.next = &l.root
+	l.root.prev = &l.root
+	l.len = 0
+
+	return l
 }
 
 // Length returns the length of the Linked List
@@ -61,65 +58,82 @@ func (l *List) Length() int {
 }
 
 // Append appends a value to the list at the end
-func (l *List) Append(val interface{}) (err error) {
+func (l *List) PushFront(val interface{}) *Node {
 	defer func() {
-		if err == nil {
-			l.len++
-		}
+		l.len++
 	}()
-	if l.len == 0 {
-		l.root.value = val
-		return nil
-	}
-
-	currentNode, err := l.getNodeAtPos(pos)
-	if err != nil {
-		return err
-	}
-
-	// save the prev of the current node as temp var
-	temp := currentNode.prev
 
 	// create new node with val
 	// make the next of the new node be the current node
 	newNode := &Node{
-		value: val,
-		next:  currentNode,
-		prev:  temp,
+		Value: val,
+		next:  l.root.next,
+		prev:  &l.root,
 	}
 
-	// put the next of the temp var as the new node
-	temp.next = newNode
+	l.root.next = newNode
+	newNode.next.prev = newNode
 
-	l.len++
+	return newNode
+}
 
-	return nil
+// Head returns the head node of the LinkedList
+func (l *List) Head() *Node {
+	if l.len == 0 {
+		return nil
+	}
+	return l.root.next
+}
+
+// Tail returns the tail node of the LinkedList
+func (l *List) Tail() *Node {
+	if l.len == 0 {
+		return nil
+	}
+	return l.root.prev
+}
+
+// Remove is going to remove a Node from the LinkedList
+func (l *List) Remove(node *Node) {
+	node.next.prev = node.prev
+	node.prev.next = node.next
+	node.next = nil
+	node.prev = nil
+	l.len--
+}
+
+// Movefront is going to move the passed in Node to the front of the Linked List
+func (l *List) MoveFront(node *Node) {
+	currentFront := l.root.next
+
+	node.prev = &l.root
+	l.root.next = node
+
+	currentFront.prev = node
+	node.next = currentFront
 }
 
 // Get returns the node at a given position
-func (l *List) Get(pos int) *Node {
-	node, err := l.getNodeAtPos(pos)
-	if err != nil {
-		return nil
-	}
+//func (l *List) Get(pos int) *Node {
+//node := l.getNodeAtPos(pos)
 
-	return node
-}
+//return node
+//}
 
-func (l *List) getNodeAtPos(pos int) (*Node, error) {
-	if pos < 0 || pos > l.len {
-		return nil, ErrInvalidIndex
-	}
+//func (l *List) getNodeAtPos(pos int) *Node {
+//if pos < 0 || pos > l.len {
+//panic(ErrInvalidIndex)
+//}
 
-	currentIdx := 0
-	currentNode := l.root
+//currentIdx := 0
+//currentNode := l.root
 
-	// start at 0
-	// iterate over nodes until we get to position
-	for currentIdx < pos-1 {
-		currentNode = currentNode.next
-		currentIdx++
-	}
+//// start at 0
+//// iterate over nodes until we get to position
+//for currentIdx < pos-1 {
+//currentNode = currentNode.next
+//currentIdx++
+//}
 
-	return currentNode, nil
-}
+//return currentNode
+//}
