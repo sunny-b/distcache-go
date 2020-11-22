@@ -1,4 +1,4 @@
-module github.com/sunny-b/distcache-go
+module distcache-go
 
 go 1.15
 

@@ -35,6 +35,7 @@ var (
 type List struct {
 	len  int
 	root *Node
+	tail *Node
 }
 
 // Node represents a node in the linked list
@@ -46,49 +47,34 @@ type Node struct {
 
 // New creates a new LinkedList
 func New() *List {
+	root := new(Node)
 	return &List{
-		root: &Node{
-			next: new(Node),
-			prev: new(Node),
-		},
-		len: 0,
+		root: root,
+		tail: root,
+		len:  0,
 	}
 }
 
-// Length returns the length of the LinkedList
+// Length returns the length of the Linked List
 func (l *List) Length() int {
 	return l.len
 }
 
-// InsertRoot inserts a value into the LinkedList
-func (l *List) InsertRoot(val interface{}) *List {
+// Append appends a value to the list at the end
+func (l *List) Append(val interface{}) (err error) {
+	defer func() {
+		if err == nil {
+			l.len++
+		}
+	}()
 	if l.len == 0 {
 		l.root.value = val
-		l.len++
+		return nil
 	}
 
-	return l
-}
-
-// GetRootVal returns the value at the root node
-func (l *List) GetRootVal() interface{} {
-	return l.root.value
-}
-
-// Insert inserts a value at the positional index
-func (l *List) Insert(val interface{}, pos int) (*List, error) {
-	if pos < 0 || pos > l.len {
-		return l, ErrInvalidIndex
-	}
-
-	currentIdx := 0
-	currentNode := l.root
-
-	// start at 0
-	// iterate over nodes until we get to position
-	for currentIdx != pos-1 {
-		currentNode = currentNode.next
-		currentIdx++
+	currentNode, err := l.getNodeAtPos(pos)
+	if err != nil {
+		return err
 	}
 
 	// save the prev of the current node as temp var
@@ -98,15 +84,42 @@ func (l *List) Insert(val interface{}, pos int) (*List, error) {
 	// make the next of the new node be the current node
 	newNode := &Node{
 		value: val,
+		next:  currentNode,
+		prev:  temp,
 	}
-	newNode.next = currentNode
 
-	// put prev of new node as the temp var
-	newNode.prev = temp
 	// put the next of the temp var as the new node
 	temp.next = newNode
 
 	l.len++
 
-	return l, nil
+	return nil
+}
+
+// Get returns the node at a given position
+func (l *List) Get(pos int) *Node {
+	node, err := l.getNodeAtPos(pos)
+	if err != nil {
+		return nil
+	}
+
+	return node
+}
+
+func (l *List) getNodeAtPos(pos int) (*Node, error) {
+	if pos < 0 || pos > l.len {
+		return nil, ErrInvalidIndex
+	}
+
+	currentIdx := 0
+	currentNode := l.root
+
+	// start at 0
+	// iterate over nodes until we get to position
+	for currentIdx < pos-1 {
+		currentNode = currentNode.next
+		currentIdx++
+	}
+
+	return currentNode, nil
 }
