@@ -87,6 +87,21 @@ func (l *LRUCache) Set(key string, value interface{}) interface{} {
 	return tail.Value.(*element).value
 }
 
+func (l *LRUCache) Invalidate(key string) {
+	l.mutex.Lock()
+	defer l.mutex.Unlock()
+
+	node, exists := l.items[key]
+	if !exists {
+		return
+	}
+
+	l.list.Remove(node)
+	delete(l.items, key)
+
+	return
+}
+
 func (l *LRUCache) get(key string) *list.Node {
 	l.mutex.RLock()
 	defer l.mutex.RUnlock()

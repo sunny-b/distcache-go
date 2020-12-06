@@ -1,0 +1,68 @@
+version: "3"
+services:
+  db1:
+    image: "postgres"
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: sekret
+      POSTGRES_DB: admin
+  api1:
+    build: .
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      DB_USER: "admin"
+      DB_PASS: "sekret"
+      DB_HOST: "db1"
+      DB_PORT: "5432"
+      DB_NAME: "admin"
+      SELF: "api1:8080"
+      NODES: "0::api1:8080;1::api2:8081;2::api3:8082"
+    depends_on:
+      - db1
+  db2:
+    image: "postgres"
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: sekret
+      POSTGRES_DB: admin
+  api2:
+    build: .
+    restart: always
+    ports:
+      - "8081:8080"
+    environment:
+      DB_USER: "admin"
+      DB_PASS: "sekret"
+      DB_HOST: "db2"
+      DB_PORT: "5432"
+      DB_NAME: "admin"
+      SELF: "api2:8081"
+      NODES: "0::api1:8080;1::api2:8081;2::api3:8082"
+    depends_on:
+      - db2
+  db3:
+    image: "postgres"
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: sekret
+      POSTGRES_DB: admin
+  api3:
+    build: .
+    restart: always
+    ports:
+      - "8082:8080"
+    environment:
+      DB_USER: "admin"
+      DB_PASS: "sekret"
+      DB_HOST: "db3"
+      DB_PORT: "5432"
+      DB_NAME: "admin"
+      SELF: "api3:8082"
+      NODES: "0::api1:8080;1::api2:8081;2::api3:8082"
+    depends_on:
+      - db3

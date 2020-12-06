@@ -60,3 +60,15 @@ func TestSet(t *testing.T) {
 		assert.NotNil(t, value)
 	})
 }
+
+func TestInvalidate(t *testing.T) {
+	t.Run("invalidate in use key", func(t *testing.T) {
+		cache := New(1)
+		cache.Set("foo", "bar")
+		assert.Equal(t, "bar", cache.Get("foo").(string))
+
+		cache.Invalidate("foo")
+
+		assert.Nil(t, cache.Get("foo"))
+	})
+}
